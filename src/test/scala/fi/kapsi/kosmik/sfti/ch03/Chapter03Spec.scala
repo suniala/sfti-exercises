@@ -78,4 +78,16 @@ class Chapter03Spec extends FunSpec with Matchers {
       ex08(ArrayBuffer(-3, -2, 5, 1, -6, 5, -1)) shouldEqual ArrayBuffer(-3, 5, 1, 5)
     }
   }
+
+  describe("Exercise 10") {
+    it("should return first 6 American time zones") {
+      ex10() shouldEqual Array("Adak", "Anchorage", "Anguilla", "Antigua", "Araguaina", "Argentina/Buenos_Aires")
+    }
+  }
+
+  describe("Exercise 11") {
+    it("should return a buffer with strings in it") {
+      ex11() should have length 6
+    }
+  }
 }

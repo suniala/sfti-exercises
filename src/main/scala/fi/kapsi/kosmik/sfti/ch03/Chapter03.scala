@@ -1,5 +1,6 @@
 package fi.kapsi.kosmik.sfti.ch03
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object Chapter03 {
@@ -102,5 +103,29 @@ object Chapter03 {
       arr(targetIndex) = arr(index)
 
     arr.take(moves.last._2)
+  }
+
+  /**
+    * Make a collection of all time zones returned by java.util.TimeZone.getAvailableIDs
+    * that are in America. Strip off the "America/" prefix and sort the result.
+    * NOTE: Only returns first 6 so as to simplify testing
+    */
+  def ex10(): Array[String] =
+    java.util.TimeZone.getAvailableIDs
+      .filter(_.startsWith("America/"))
+      .map(_.stripPrefix("America/"))
+      .sorted
+      .take(6)
+
+  /**
+    * Import java.awt.datatransfer._ and ... return value as a Scala buffer.
+    */
+  def ex11(): mutable.Buffer[String] = {
+    import java.awt.datatransfer._
+
+    import scala.collection.JavaConverters._
+
+    val flavors = SystemFlavorMap.getDefaultFlavorMap.asInstanceOf[SystemFlavorMap]
+    flavors.getNativesForFlavor(DataFlavor.imageFlavor).asScala
   }
 }
