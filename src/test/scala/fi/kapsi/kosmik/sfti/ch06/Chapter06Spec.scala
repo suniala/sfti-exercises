@@ -10,8 +10,8 @@ class Chapter06Spec extends FunSpec with Matchers {
   }
 
   describe("Exercise 07") {
-    import fi.kapsi.kosmik.sfti.ch06.Ex07Suit._
     import fi.kapsi.kosmik.sfti.ch06.Ex07._
+    import fi.kapsi.kosmik.sfti.ch06.Ex07Suit._
 
     it("should give suit colour") {
       isRed(Diamonds) shouldEqual true

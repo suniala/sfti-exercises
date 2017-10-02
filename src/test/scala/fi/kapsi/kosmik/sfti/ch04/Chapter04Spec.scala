@@ -1,11 +1,7 @@
 package fi.kapsi.kosmik.sfti.ch04
 
-import java.io.InputStream
-
 import fi.kapsi.kosmik.sfti.ch04.Chapter04._
 import org.scalatest.{FunSpec, Matchers}
-
-import scala.collection.SortedMap
 
 class Chapter04Spec extends FunSpec with Matchers {
   describe("Exercise 01") {
