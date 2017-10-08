@@ -1,11 +1,15 @@
 package fi.kapsi.kosmik.sfti.ch10
 
+import java.beans.{PropertyChangeEvent, PropertyChangeListener}
+
 import fi.kapsi.kosmik.sfti.ch10.Ex01.RectangleLike
 import fi.kapsi.kosmik.sfti.ch10.Ex02.OrderedPoint
 import fi.kapsi.kosmik.sfti.ch10.Ex04.{BufferLogger, CryptoLogger}
+import fi.kapsi.kosmik.sfti.ch10.Ex05.PointBean
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 
-class Chapter10Spec extends FunSpec with Matchers {
+class Chapter10Spec extends FunSpec with Matchers with MockFactory {
   describe("Exercise 01") {
     it("should mix translate and grow to Ellipse2D.Double") {
       val egg = new java.awt.geom.Ellipse2D.Double(5, 10, 20, 30) with RectangleLike
@@ -74,4 +78,19 @@ class Chapter10Spec extends FunSpec with Matchers {
       log.buffer.toString shouldEqual "Afddfill afddfibv"
     }
   }
+
+  describe("Exercise 05") {
+    it("should fire change listener via trait") {
+      val locationListener = mock[PropertyChangeListener]
+      (locationListener.propertyChange _).expects(where {
+        (e: PropertyChangeEvent) => e.getPropertyName == "location" && e.getNewValue == new java.awt.Point(2, 4)
+      }).once
+
+      val point = new PointBean
+      point.addPropertyChangeListener("location", locationListener)
+
+      point.setLocation(2, 4)
+    }
+  }
+
 }
