@@ -6,6 +6,8 @@ import fi.kapsi.kosmik.sfti.ch10.Ex01.RectangleLike
 import fi.kapsi.kosmik.sfti.ch10.Ex02.OrderedPoint
 import fi.kapsi.kosmik.sfti.ch10.Ex04.{BufferLogger, CryptoLogger}
 import fi.kapsi.kosmik.sfti.ch10.Ex05.PointBean
+import fi.kapsi.kosmik.sfti.ch10.Ex09.{BufferedInputStream, CallCountingInputStream, StringInputStream}
+import fi.kapsi.kosmik.sfti.ch10.Ex11.IterableByteInputStream
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 
@@ -93,4 +95,48 @@ class Chapter10Spec extends FunSpec with Matchers with MockFactory {
     }
   }
 
+  describe("Exercise 09") {
+    it("should call nested stream every time read is called when buffer not in use") {
+      val unbuffered = new {
+        val input = "I've got a bike you can ride it if you like"
+      } with StringInputStream with CallCountingInputStream
+
+      for (i <- 1 to 9) {
+        unbuffered.read()
+        unbuffered.callCount shouldEqual i
+      }
+    }
+
+    it("should call nested stream only when filling up buffer when buffer is in use") {
+      val buffered = new {
+        val input = "I know a clan of gingerbread men"
+      } with StringInputStream with CallCountingInputStream with BufferedInputStream
+
+      buffered.callCount shouldEqual 0
+
+      buffered.read()
+      buffered.callCount shouldEqual 4
+
+      buffered.read()
+      buffered.callCount shouldEqual 4
+
+      buffered.read()
+      buffered.callCount shouldEqual 4
+
+      buffered.read()
+      buffered.callCount shouldEqual 4
+
+      buffered.read()
+      buffered.callCount shouldEqual 8
+    }
+  }
+
+  describe("Exercise 11") {
+    it("should iterate over input stream") {
+      val is = new IterableByteInputStream(Array[Byte](1, 2, 3, 4, 5))
+
+      val iteratorGeneratedCopy = (for (c <- is) yield c).toArray
+      iteratorGeneratedCopy shouldEqual Array[Byte](1, 2, 3, 4, 5)
+    }
+  }
 }
