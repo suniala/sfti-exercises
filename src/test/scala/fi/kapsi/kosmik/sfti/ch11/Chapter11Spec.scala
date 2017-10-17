@@ -4,6 +4,7 @@ import fi.kapsi.kosmik.sfti.ch11.Ex03.Fraction
 import fi.kapsi.kosmik.sfti.ch11.Ex04.Money
 import fi.kapsi.kosmik.sfti.ch11.Ex05.Table
 import fi.kapsi.kosmik.sfti.ch11.Ex06.{Cat, Hello}
+import fi.kapsi.kosmik.sfti.ch11.Ex07.BitSequence
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -94,6 +95,37 @@ class Chapter11Spec extends FunSpec with Matchers {
 
     it("should add below") {
       (Hello() :\ Cat()).toString shouldEqual expected("hello-with-cat-below")
+    }
+  }
+
+  describe("Exercise 07") {
+    it("should initialize a nil sequence") {
+      val nils = BitSequence()
+
+      nils(0) shouldEqual false
+      nils(32) shouldEqual false
+      nils(63) shouldEqual false
+    }
+
+    it("should update bits") {
+      val bits = BitSequence()
+
+      bits(0) = true
+      bits(0) shouldBe true
+      bits(1) shouldBe false
+
+      bits(0) = false
+      bits(0) shouldBe false
+
+      bits(1) = true
+      bits(32) = true
+      bits(0) shouldBe false
+      bits(1) shouldBe true
+      bits(32) shouldBe true
+      bits(63) shouldBe false
+
+      bits(63) = true
+      bits(63) shouldBe true
     }
   }
 }
