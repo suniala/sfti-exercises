@@ -5,6 +5,7 @@ import fi.kapsi.kosmik.sfti.ch11.Ex04.Money
 import fi.kapsi.kosmik.sfti.ch11.Ex05.Table
 import fi.kapsi.kosmik.sfti.ch11.Ex06.{Cat, Hello}
 import fi.kapsi.kosmik.sfti.ch11.Ex07.BitSequence
+import fi.kapsi.kosmik.sfti.ch11.Ex08.Matrix
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -126,6 +127,87 @@ class Chapter11Spec extends FunSpec with Matchers {
 
       bits(63) = true
       bits(63) shouldBe true
+    }
+  }
+
+  describe("Exercise 08") {
+    it("should access and update matrix cells") {
+      val mat = Matrix(2, 3)
+      mat(1, 1) shouldEqual 0
+      mat(2, 3) shouldEqual 0
+
+      mat(1, 1) = 3
+      mat(2, 3) = -5
+      mat(1, 1) shouldEqual 3
+      mat(2, 3) shouldEqual -5
+    }
+
+    it("should parse matrix") {
+      val mat = Matrix.parse(
+        """
+        4 3 2
+       -2 5 5
+        """)
+
+      mat(1, 1) shouldEqual 4
+      mat(2, 1) shouldEqual -2
+      mat(2, 3) shouldEqual 5
+    }
+
+    it("should add two matrices") {
+      val m1 = Matrix.parse(
+        """
+          1 3 1
+          1 0 0
+        """)
+      val m2 = Matrix.parse(
+        """
+          0 0 5
+          7 5 0
+        """)
+
+      m1 + m2 shouldEqual Matrix.parse(
+        """
+          1 3 6
+          8 5 0
+        """)
+
+    }
+
+    it("should multiply two matrices") {
+      val m1 = Matrix.parse(
+        """
+          2 3 4
+          1 0 0
+        """)
+      val m2 = Matrix.parse(
+        """
+          0 1000
+          1  100
+          0   10
+        """)
+
+      m1 * m2 shouldEqual Matrix.parse(
+        """
+          3 2340
+          0 1000
+        """)
+
+    }
+
+    it("should multiply matrix by scalar") {
+      val m1 = Matrix.parse(
+        """
+          2 3 4
+          1 0 0
+        """)
+
+      m1 * 2 shouldEqual Matrix.parse(
+        """
+          4 6 8
+          2 0 0
+        """)
+
     }
   }
 }
