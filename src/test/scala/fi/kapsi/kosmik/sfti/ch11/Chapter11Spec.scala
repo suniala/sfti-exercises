@@ -1,11 +1,14 @@
 package fi.kapsi.kosmik.sfti.ch11
 
+import java.io.File
+
 import fi.kapsi.kosmik.sfti.ch11.Ex03.Fraction
 import fi.kapsi.kosmik.sfti.ch11.Ex04.Money
 import fi.kapsi.kosmik.sfti.ch11.Ex05.Table
 import fi.kapsi.kosmik.sfti.ch11.Ex06.{Cat, Hello}
 import fi.kapsi.kosmik.sfti.ch11.Ex07.BitSequence
 import fi.kapsi.kosmik.sfti.ch11.Ex08.Matrix
+import fi.kapsi.kosmik.sfti.ch11.Ex09.PathComponents
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -208,6 +211,30 @@ class Chapter11Spec extends FunSpec with Matchers {
           2 0 0
         """)
 
+    }
+  }
+
+  describe("Exercise 09") {
+    def path(p: String): java.nio.file.Path = {
+      new File(p).toPath
+    }
+
+    it("should unapply root path") {
+      val PathComponents(dir, filename) = path("/foo")
+      dir shouldEqual "/"
+      filename shouldEqual "foo"
+    }
+
+    it("should unapply complex path") {
+      val PathComponents(dir, filename) = path("/diggi/loo/diggi/ley")
+      dir shouldEqual "/diggi/loo/diggi"
+      filename shouldEqual "ley"
+    }
+
+    it("should fail if no filename") {
+      assertThrows[MatchError] {
+        val PathComponents(dir, filename) = path("/")
+      }
     }
   }
 }
