@@ -9,6 +9,7 @@ import fi.kapsi.kosmik.sfti.ch11.Ex06.{Cat, Hello}
 import fi.kapsi.kosmik.sfti.ch11.Ex07.BitSequence
 import fi.kapsi.kosmik.sfti.ch11.Ex08.Matrix
 import fi.kapsi.kosmik.sfti.ch11.Ex09.PathComponents
+import fi.kapsi.kosmik.sfti.ch11.Ex10.SeqPathComponents
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -234,6 +235,30 @@ class Chapter11Spec extends FunSpec with Matchers {
     it("should fail if no filename") {
       assertThrows[MatchError] {
         val PathComponents(dir, filename) = path("/")
+      }
+    }
+  }
+
+  describe("Exercise 10") {
+    def path(p: String): java.nio.file.Path = {
+      new File(p).toPath
+    }
+
+    it("should match case with exact number of parts") {
+      val p = path("/home/cay/readme.txt")
+      p match {
+        case SeqPathComponents(part1) => fail()
+        case SeqPathComponents(part1, part2) => fail()
+        case SeqPathComponents(part1, part2, part3) =>
+          part1 shouldEqual "home"
+          part2 shouldEqual "cay"
+          part3 shouldEqual "readme.txt"
+      }
+    }
+
+    it("should fail if no filename") {
+      assertThrows[MatchError] {
+        val SeqPathComponents(part1) = path("/")
       }
     }
   }
