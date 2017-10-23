@@ -9,6 +9,7 @@ lazy val root = (project in file(".")).
     )),
     name := "Scala for the Impatient Exercises",
     libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
       scalaTest % Test,
       "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test
     )

@@ -10,6 +10,8 @@ import fi.kapsi.kosmik.sfti.ch11.Ex07.BitSequence
 import fi.kapsi.kosmik.sfti.ch11.Ex08.Matrix
 import fi.kapsi.kosmik.sfti.ch11.Ex09.PathComponents
 import fi.kapsi.kosmik.sfti.ch11.Ex10.SeqPathComponents
+import fi.kapsi.kosmik.sfti.ch11.Ex11.DynamicProps
+import fi.kapsi.kosmik.sfti.ch11.Ex12.XMLElement
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -260,6 +262,63 @@ class Chapter11Spec extends FunSpec with Matchers {
       assertThrows[MatchError] {
         val SeqPathComponents(part1) = path("/")
       }
+    }
+  }
+
+  describe("Exercise 11") {
+    it("should dynamically select property path separated by periods") {
+      val sysProps = new DynamicProps(System.getProperties)
+      // I assure you, if this test fails on some environments, the problem most definitely is not in the test.
+      sysProps.os.name.toString shouldEqual "Linux"
+    }
+
+    it("should dynamically update property path separated by periods") {
+      val sysProps = new DynamicProps(System.getProperties)
+      sysProps.user.nickname = "Kepponen"
+      sysProps.user.nickname.toString shouldEqual "Kepponen"
+    }
+  }
+
+  describe("Exercise 12") {
+    val scalaXml =
+      <html>
+        <body id="foo">
+          <h1>Moro!</h1>
+          <ul id="11">
+            <li id="mustamakkara">...</li>
+          </ul>
+          <ul id="42">
+            <li id="riävä">...</li>
+            <li id="holipompeli">...</li>
+          </ul>
+        </body>
+      </html>
+
+    val xml = XMLElement.fromScalaXml(scalaXml)
+
+    it("should find element in a simple document") {
+      val body = xml.html.body.iterator.next
+      body.label shouldEqual "body"
+      body.attr("id").get shouldEqual "foo"
+    }
+
+    it("should find elements with attribute filtering") {
+      val liElems = xml.html.body.ul(id = "42").li
+      val liIter = liElems.iterator
+
+      liIter.next.attr("id").get shouldEqual "riävä"
+      liIter.next.attr("id").get shouldEqual "holipompeli"
+      liIter.hasNext shouldBe false
+    }
+
+    it("should find child elements of multiple elements") {
+      val liElems = xml.html.body.ul.li
+      val liIter = liElems.iterator
+
+      liIter.next.attr("id").get shouldEqual "mustamakkara"
+      liIter.next.attr("id").get shouldEqual "riävä"
+      liIter.next.attr("id").get shouldEqual "holipompeli"
+      liIter.hasNext shouldBe false
     }
   }
 }
