@@ -12,6 +12,7 @@ import fi.kapsi.kosmik.sfti.ch11.Ex09.PathComponents
 import fi.kapsi.kosmik.sfti.ch11.Ex10.SeqPathComponents
 import fi.kapsi.kosmik.sfti.ch11.Ex11.DynamicProps
 import fi.kapsi.kosmik.sfti.ch11.Ex12.XMLElement
+import fi.kapsi.kosmik.sfti.ch11.Ex13.XMLBuilder
 import org.scalatest.{FunSpec, Matchers}
 
 class Chapter11Spec extends FunSpec with Matchers {
@@ -319,6 +320,33 @@ class Chapter11Spec extends FunSpec with Matchers {
       liIter.next.attr("id").get shouldEqual "riävä"
       liIter.next.attr("id").get shouldEqual "holipompeli"
       liIter.hasNext shouldBe false
+    }
+  }
+
+  describe("Exercise 13") {
+    it("should build element") {
+      val builder = new XMLBuilder()
+      val ul = builder.ul(id = "42", style = "list-style: lower-alpha;")
+      ul.label shouldEqual "ul"
+      ul.attr("style").get shouldEqual "list-style: lower-alpha;"
+    }
+
+    it("should build nested elements conveniently") {
+      val builder = new XMLBuilder()
+      val ul =
+        builder.ul(id = "42",
+          builder.li(id = "12",
+            builder.span),
+          builder.li(id = "32")
+        )
+
+      ul.label shouldEqual "ul"
+      ul.attr("id").get shouldEqual "42"
+
+      ul.children.head.label shouldEqual "li"
+      ul.children.head.attr("id").get shouldEqual "12"
+      ul.children.head.children.head.label shouldEqual "span"
+      ul.children(1).attr("id").get shouldEqual "32"
     }
   }
 }
