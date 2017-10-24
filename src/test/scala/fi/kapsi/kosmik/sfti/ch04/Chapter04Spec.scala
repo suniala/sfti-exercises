@@ -53,7 +53,10 @@ class Chapter04Spec extends FunSpec with Matchers {
 
   describe("Exercise 07") {
     it("should print system props (check console)") {
-      ex07()
+      val formattedProps = ex07(printAlso = false)
+      // Only do simple assertions. Formatting should be checked manually.
+      formattedProps.contains("java.version") shouldBe true
+      formattedProps.contains("java.vm.specification.version") shouldBe true
     }
   }
 

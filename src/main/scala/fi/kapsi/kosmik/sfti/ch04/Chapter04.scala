@@ -101,7 +101,7 @@ object Chapter04 {
     * Print a table of all Java properties reported by the getProperties method of the
     * java.lang.System class
     */
-  def ex07(): Unit = {
+  def ex07(printAlso: Boolean = false): String = {
     val properties = java.lang.System.getProperties
     import scala.collection.JavaConverters._
     val names = properties.stringPropertyNames().asScala.toList.sorted
@@ -111,8 +111,9 @@ object Chapter04 {
       .sorted(Ordering.Int.reverse)
       .head
 
-    for (name <- names)
-      print(f"${name.padTo(maxLength, ' ')} | ${properties.getProperty(name)}%n")
+    val formatted = names.map(n => f"${n.padTo(maxLength, ' ')} | ${properties.getProperty(n)}%n").mkString("")
+    if (printAlso) print(formatted)
+    formatted
   }
 
   /**
