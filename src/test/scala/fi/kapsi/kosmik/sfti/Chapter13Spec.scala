@@ -1,11 +1,10 @@
 package fi.kapsi.kosmik.sfti
 
-import fi.kapsi.kosmik.sfti.TestUtil.evaluateAndTime
 import org.scalatest.{FunSpec, Matchers}
 
 import scala.collection.mutable.ListBuffer
 
-class Chapter13Spec extends FunSpec with Matchers {
+class Chapter13Spec extends FunSpec with Matchers with ExerciseSupport {
 
   private def charIndexesTestCase(indexes: String => collection.Map[Char, collection.SortedSet[Int]]): Unit = {
     // NOTE: Compare each set separately as we need to use toSeq for verifying correct order of elements.
@@ -42,7 +41,7 @@ class Chapter13Spec extends FunSpec with Matchers {
 
     it("should remove every second element in place") {
       val d = input
-      val actual = evaluateAndTime(s => info(s), "in place") {
+      val actual = evaluateAndTime("in place") {
         removeEverySecondInPlace(d)
       }
       actual shouldEqual expected
@@ -50,7 +49,7 @@ class Chapter13Spec extends FunSpec with Matchers {
 
     it("should remove every second element by copying") {
       val d = input
-      val actual = evaluateAndTime(s => info(s), "copying") {
+      val actual = evaluateAndTime("copying") {
         removeEverySecondCopy(d)
       }
       actual shouldEqual expected
@@ -143,7 +142,7 @@ class Chapter13Spec extends FunSpec with Matchers {
     import fi.kapsi.kosmik.sfti.Chapter13.Ex11._
 
     val longString: String = (for (i <- 1 to 43; j <- 1 to 213) yield i + j).mkString("")
-    lazy val expectedLongStringFrecs = evaluateAndTime(s => info(s), "single thread") {
+    lazy val expectedLongStringFrecs = evaluateAndTime("single thread") {
       frequenciesSingleThread(longString)
     }
 
@@ -161,7 +160,7 @@ class Chapter13Spec extends FunSpec with Matchers {
     }
 
     it("should not calc frequencies properly using faulty parallel implementation") {
-      val frequencies = evaluateAndTime(s => info(s), "faulty parallel") {
+      val frequencies = evaluateAndTime("faulty parallel") {
         frequenciesHackerParallel(longString)
       }
       // Works on my machine! Or more precisely, frequenciesHackerParallel does NOT work!
@@ -169,7 +168,7 @@ class Chapter13Spec extends FunSpec with Matchers {
     }
 
     it("should calc frequencies properly using fixed parallel implementation") {
-      val frequencies = evaluateAndTime(s => info(s), "fixed parallel") {
+      val frequencies = evaluateAndTime("fixed parallel") {
         frequenciesFixedParallel(longString)
       }
       frequencies should be(expectedLongStringFrecs)
