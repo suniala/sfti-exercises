@@ -92,4 +92,87 @@ class Chapter13Spec extends FunSpec with Matchers {
       reverseByFoldLeft(List(1, 2, 3, 4)) shouldEqual List(4, 3, 2, 1)
     }
   }
+
+  describe("Exercise 07") {
+    import fi.kapsi.kosmik.sfti.Chapter13.Ex07._
+
+    it("should produce same result with tupled") {
+      val prices = List(5.0, 20.0, 9.95)
+      val quantities = List(10, 2, 1)
+
+      multiplyTuplesCase(prices, quantities) shouldEqual multiplyTuplesInelegant(prices, quantities)
+      multiplyTuplesTupledWildcards(prices, quantities) shouldEqual multiplyTuplesInelegant(prices, quantities)
+      multiplyTuplesTupledUtilityFunction(prices, quantities) shouldEqual multiplyTuplesInelegant(prices, quantities)
+      multiplyTuplesZipped(prices, quantities) shouldEqual multiplyTuplesInelegant(prices, quantities)
+    }
+  }
+
+  describe("Exercise 08") {
+    import fi.kapsi.kosmik.sfti.Chapter13.Ex08._
+
+    it("should wrap values") {
+      wrap(Array(1, 2, 3, 4, 5, 6), 3) shouldEqual Array(Array(1, 2, 3), Array(4, 5, 6))
+    }
+  }
+
+  describe("Exercise 09") {
+    import fi.kapsi.kosmik.sfti.Chapter13.Ex09._
+
+    it("should produce identical lists by mapping or for-looping over two iterators") {
+      val mapResult = twoIterablesMap(10, 5)
+      mapResult.length shouldEqual 10 * 5
+      mapResult shouldEqual twoIterablesFor(10, 5)
+    }
+
+    it("should produce identical lists by mapping or for-looping over three iterators") {
+      val mapResult = threeIterablesMap(3, 2, 5)
+      mapResult.length shouldEqual 3 * 2 * 5
+      mapResult shouldEqual threeIterablesFor(3, 2, 5)
+    }
+  }
+
+  describe("Exercise 10") {
+    import fi.kapsi.kosmik.sfti.Chapter13.Ex10._
+
+    it("should find continent with most time zones") {
+      continentWithMostTimeZones() shouldEqual "Arctic"
+    }
+  }
+
+  describe("Exercise 11") {
+    import fi.kapsi.kosmik.sfti.Chapter13.Ex11._
+
+    val longString: String = (for (i <- 1 to 43; j <- 1 to 213) yield i + j).mkString("")
+    lazy val expectedLongStringFrecs = evaluateAndTime(s => info(s), "single thread") {
+      frequenciesSingleThread(longString)
+    }
+
+    it("should calc frequencies using single thread reference implementation") {
+      frequenciesSingleThread("diggiloo diggiley") shouldEqual Map(
+        'd' -> 2,
+        'i' -> 4,
+        'g' -> 4,
+        'l' -> 2,
+        'o' -> 2,
+        ' ' -> 1,
+        'e' -> 1,
+        'y' -> 1
+      )
+    }
+
+    it("should not calc frequencies properly using faulty parallel implementation") {
+      val frequencies = evaluateAndTime(s => info(s), "faulty parallel") {
+        frequenciesHackerParallel(longString)
+      }
+      // Works on my machine! Or more precisely, frequenciesHackerParallel does NOT work!
+      frequencies shouldNot be(expectedLongStringFrecs)
+    }
+
+    it("should calc frequencies properly using fixed parallel implementation") {
+      val frequencies = evaluateAndTime(s => info(s), "fixed parallel") {
+        frequenciesFixedParallel(longString)
+      }
+      frequencies should be(expectedLongStringFrecs)
+    }
+  }
 }
