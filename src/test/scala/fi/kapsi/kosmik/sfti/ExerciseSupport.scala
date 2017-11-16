@@ -20,7 +20,7 @@ trait ExerciseSupport extends FunSpecLike {
     val t1 = System.nanoTime()
     val result = thunk
     val t2 = System.nanoTime()
-    info(f"  -> '$label' took ${(t2 - t1).toDouble / 1000} milliseconds")
+    info(f"  -> '$label' took ${(t2 - t1).toDouble / 1000} microseconds")
     result
   }
 }
