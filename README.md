@@ -9,3 +9,12 @@ For each chapter's exercises, I try to use only language constructs covered so f
 ```
 sbt test
 ```
+
+## Elsewhere
+
+Solutions for the 1st edition:
+
+ * https://github.com/hempalex/scala-impatient
+ * https://github.com/Gerhut/scala-for-the-impatient
+ * https://bitbucket.org/McDamon/scalaimpatient
+ * https://parambirs.wordpress.com/tag/scalafortheimpatient/
