@@ -83,8 +83,7 @@ class Chapter03Spec extends FunSpec with Matchers {
   }
 
   describe("Exercise 09") {
-    // FIXME: this should test Ex09!
-    import Chapter03.Ex08._
+    import Chapter03.Ex09._
 
     it("should remove (in-place) all but first negative number from array buffer") {
       removeAllButFirstNegative(ArrayBuffer(1, 6, -3, -2, 5, 1, -6, 5, -1, 1)) shouldEqual ArrayBuffer(1, 6, -3, 5, 1, 5, 1)

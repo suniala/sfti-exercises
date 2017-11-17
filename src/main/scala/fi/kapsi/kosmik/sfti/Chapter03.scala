@@ -116,7 +116,7 @@ object Chapter03 {
       for ((index, targetIndex) <- moves)
         arr(targetIndex) = arr(index)
 
-      arr.take(moves.last._2)
+      arr.take(moves.last._2 + 1)
     }
   }
 
