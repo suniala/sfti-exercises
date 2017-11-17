@@ -76,4 +76,52 @@ object Chapter14 {
     }
   }
 
+  /**
+    * A better way of modeling such trees is with case classes. Let’s start with binary
+    * trees.
+    * <pre>
+    * sealed abstract class BinaryTree
+    * case class Leaf(value: Int) extends BinaryTree
+    * case class Node(left: BinaryTree, right: BinaryTree) extends BinaryTree
+    * </pre>
+    * Write a function to compute the sum of all elements in the leaves.
+    */
+  object Ex06 {
+
+    sealed abstract class BinaryTree
+
+    case class Leaf(value: Int) extends BinaryTree
+
+    case class Node(left: BinaryTree, right: BinaryTree) extends BinaryTree
+
+    def leafSum(tree: BinaryTree): Int =
+      tree match {
+        case Leaf(value) => value
+        case Node(left, right) => leafSum(left) + leafSum(right)
+      }
+  }
+
+  /**
+    * Extend the tree in the preceding exercise so that each node can have an arbi-
+    * trary number of children, and reimplement the leafSum function. The tree in
+    * Exercise 5 should be expressible as
+    * <pre>
+    * Node(Node(Leaf(3), Leaf(8)), Leaf(2), Node(Leaf(5)))
+    * </pre>
+    */
+  object Ex07 {
+
+    sealed abstract class BinaryTree
+
+    case class Leaf(value: Int) extends BinaryTree
+
+    case class Node(children: BinaryTree*) extends BinaryTree
+
+    def leafSum(tree: BinaryTree): Int =
+      tree match {
+        case Leaf(value) => value
+        case Node(children@_*) => children.map(leafSum).sum
+      }
+  }
+
 }

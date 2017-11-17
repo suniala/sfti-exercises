@@ -51,4 +51,46 @@ class Chapter14Spec extends FunSpec with Matchers {
       leafSum(tree) shouldEqual 24
     }
   }
+
+  describe("Exercise 06") {
+    import fi.kapsi.kosmik.sfti.Chapter14.Ex06._
+
+    it("should calculate leaf sum") {
+      val tree = Node(
+        Node(
+          Leaf(3),
+          Leaf(8)
+        ),
+        Node(
+          Leaf(2),
+          Node(
+            Leaf(5),
+            Leaf(3)
+          )
+        )
+      )
+
+      leafSum(tree) shouldEqual 21
+    }
+  }
+
+  describe("Exercise 07") {
+    import fi.kapsi.kosmik.sfti.Chapter14.Ex07._
+
+    it("should calculate leaf sum") {
+      val tree =
+        Node(
+          Node(
+            Leaf(3),
+            Leaf(8)
+          ),
+          Leaf(2),
+          Node(
+            Leaf(5)
+          )
+        )
+
+      leafSum(tree) shouldEqual 18
+    }
+  }
 }
