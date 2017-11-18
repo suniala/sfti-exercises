@@ -93,4 +93,74 @@ class Chapter14Spec extends FunSpec with Matchers {
       leafSum(tree) shouldEqual 18
     }
   }
+
+  describe("Exercise 08") {
+    import fi.kapsi.kosmik.sfti.Chapter14.Ex08._
+
+    it("should evaluate tree that includes unary minus") {
+      val tree =
+        Node(
+          Sum(),
+          Node(
+            Mul(),
+            Leaf(3),
+            Leaf(8)
+          ),
+          Leaf(2),
+          Node(
+            Minus(),
+            Leaf(5)
+          )
+        )
+
+      eval(tree) shouldEqual ((3 * 8) + 2 + (-5))
+    }
+
+    it("should evaluate tree that includes binary minus") {
+      val tree =
+        Node(
+          Minus(),
+          Node(
+            Mul(),
+            Leaf(3),
+            Leaf(8)
+          ),
+          Node(
+            Minus(),
+            Leaf(2),
+            Leaf(7)
+          )
+        )
+
+      eval(tree) shouldEqual (3 * 8 - (2 - 7))
+    }
+  }
+
+  describe("Exercise 09") {
+    import Chapter14.Ex09._
+
+    it("should sum Some values") {
+      sum(List(Some(3), Some(2))) shouldEqual 5
+    }
+
+    it("should ignore None values") {
+      sum(List(Some(3), None, Some(2), Some(4), None)) shouldEqual 9
+    }
+  }
+
+  describe("Exercise 10") {
+    import Chapter14.Ex10._
+
+    it("should compose two functions that may yield None") {
+      def f(x: Double) = if (x != 1) Some(1 / (x - 1)) else None
+
+      def g(x: Double) = if (x >= 0) Some(math.sqrt(x)) else None
+
+      val h = compose(g, f)
+
+      h(2) shouldEqual Some(1)
+      h(1) shouldEqual None
+      h(0) shouldEqual None
+    }
+  }
 }

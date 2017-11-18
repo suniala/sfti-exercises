@@ -124,4 +124,78 @@ object Chapter14 {
       }
   }
 
+  /**
+    * Extend the tree in the preceding exercise so that each nonleaf node stores
+    * an operator in addition to the child nodes. Then write a function eval that
+    * computes the value. For example, the tree
+    * <pre>
+    * #    +
+    * #   /|\
+    * #  * 2 -
+    * # / \  |
+    * # 3 8  5
+    * </pre>
+    * has value (3 × 8) + 2 + (–5) = 21.
+    * Pay attention to the unary minus.
+    */
+  object Ex08 {
+
+    sealed abstract class BinaryTree
+
+    case class Leaf(value: Int) extends BinaryTree
+
+    case class Node(op: Operation, children: BinaryTree*) extends BinaryTree
+
+    sealed abstract class Operation
+
+    case class Mul() extends Operation
+
+    case class Sum() extends Operation
+
+    case class Minus() extends Operation
+
+    def eval(tree: BinaryTree): Int =
+      tree match {
+        case Leaf(value) => value
+        case Node(Minus(), singleton) => -eval(singleton)
+        case Node(op, children@_*) =>
+          children.map(eval).reduce((a, b) => {
+            op match {
+              case Mul() => a * b
+              case Sum() => a + b
+              case Minus() => a - b
+            }
+          })
+      }
+  }
+
+  /**
+    * Write a function that computes the sum of the non- None values in a
+    * List[Option[Int]] . Don’t use a match statement.
+    */
+  object Ex09 {
+    def sum(values: List[Option[Int]]): Int =
+      values.map(_.getOrElse(0)).sum
+  }
+
+  /**
+    * Write a function that composes two functions of type Double => Option[Double] ,
+    * yielding another function of the same type. The composition should yield
+    * None if either function does. For example,
+    * <pre>
+    * def f(x: Double) = if (x != 1) Some(1 / (x - 1)) else None
+    * def g(x: Double) = if (x >= 0) Some(sqrt(x)) else None
+    * val h = compose(g, f) // h(x) should be g(f(x))
+    * </pre>
+    * Then h(2) is Some(1) , and h(1) and h(0) are None .
+    */
+  object Ex10 {
+    def compose(g: Double => Option[Double], f: Double => Option[Double]): Double => Option[Double] =
+      (x: Double) => {
+        val resultF = f(x)
+        if (resultF.isDefined) g(resultF.get)
+        else None
+      }
+  }
+
 }
