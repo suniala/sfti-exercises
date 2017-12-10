@@ -3,6 +3,7 @@ package fi.kapsi.kosmik.sfti
 import java.time.Duration
 import java.util.concurrent.Executors
 
+import fi.kapsi.kosmik.sfti.test.StopWatch
 import fi.kapsi.kosmik.sfti.{Chapter17 => chapter}
 import org.scalatest.{AsyncFunSpec, Matchers}
 
@@ -73,28 +74,59 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
       }
       eventualInt map { v => assert(v == 4) }
     }
+  }
 
-    describe("Exercise 04") {
-      import chapter.Ex04._
+  describe("Exercise 04") {
+    import chapter.Ex04._
 
-      it("should yield (f(t), g(t)) by running these asynchronous functions concurrently") {
-        val f = (t: Int) => Future[Int] {
-          Thread.sleep(2000)
-          ("1" * t).toInt
-        }(concurrentExecutionContext)
+    it("should yield (f(t), g(t)) by running these asynchronous functions concurrently") {
+      val f = (t: Int) => Future[Int] {
+        Thread.sleep(2000)
+        ("1" * t).toInt
+      }(concurrentExecutionContext)
 
-        val g = (t: Int) => Future[String] {
-          Thread.sleep(500)
-          "x" * t
-        }(concurrentExecutionContext)
+      val g = (t: Int) => Future[String] {
+        Thread.sleep(500)
+        "x" * t
+      }(concurrentExecutionContext)
 
-        val eventualResult = assertDurationLess(Duration.ofMillis(100)) {
-          doTogether(f, g)(5)
-        }
-        eventualResult map {
-          case (aRes, bRes) =>
-            assert(aRes == 11111)
-            assert(bRes == "xxxxx")
+      val eventualResult = assertDurationLess(Duration.ofMillis(100)) {
+        doTogether(f, g)(5)
+      }
+      eventualResult map {
+        case (aRes, bRes) =>
+          assert(aRes == 11111)
+          assert(bRes == "xxxxx")
+      }
+    }
+  }
+
+  describe("Exercise 05") {
+    import chapter.Ex05._
+
+    it("should yield Future of a sequence") {
+      val results = 1 to 5
+      val durations = for (i <- results) yield (results.last + 1 - i) * 100
+      val fs: Seq[Future[Int]] = results
+        .zip(durations)
+        .map(
+          { case (result, duration) =>
+            Future {
+              Thread.sleep(duration)
+              result
+            }(concurrentExecutionContext)
+          })
+
+      val eventualResult = assertDurationLess(Duration.ofMillis(100)) {
+        reduceFutures(fs)
+      }
+
+      val stopWatch = StopWatch.start
+      eventualResult map {
+        xs => {
+          assert(stopWatch.split < Duration.ofMillis((durations.max * 1.1).toInt),
+            "futures should be evaluated in parallel in about " + durations.max + " millis")
+          assert(xs == results)
         }
       }
     }

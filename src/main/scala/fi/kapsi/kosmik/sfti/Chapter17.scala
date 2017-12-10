@@ -96,4 +96,15 @@ object Chapter17 {
     }
   }
 
+  /**
+    * Write a function that receives a sequence of futures and returns a future that
+    * eventually yields a sequence of all results.
+    */
+  object Ex05 {
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    def reduceFutures[T](fs: Seq[Future[T]]): Future[Seq[T]] = Future.sequence(fs)
+  }
+
 }
