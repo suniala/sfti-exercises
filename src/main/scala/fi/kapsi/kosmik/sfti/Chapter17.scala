@@ -1,5 +1,6 @@
 package fi.kapsi.kosmik.sfti
 
+import scala.annotation.tailrec
 import scala.concurrent.Future
 
 object Chapter17 {
@@ -105,6 +106,31 @@ object Chapter17 {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     def reduceFutures[T](fs: Seq[Future[T]]): Future[Seq[T]] = Future.sequence(fs)
+  }
+
+  /**
+    * Write a method Future[T] repeat(action: => T, until: T => Boolean)
+    * that asynchronously repeats the action until it produces a value that is
+    * accepted by the until predicate, which should also run asynchronously. Test
+    * with a function that reads a password from the console, and a function that
+    * simulates a validity check by sleeping for a second and then checking
+    * that the password is "secret" . Hint: Use recursion.
+    */
+  object Ex06 {
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    def repeat[T](action: => T, until: T => Boolean): Future[T] = {
+      @tailrec def doActionUntil(): T = {
+        val result = action
+        if (until(result)) result
+        else doActionUntil()
+      }
+
+      Future[T] {
+        doActionUntil()
+      }
+    }
   }
 
 }

@@ -7,6 +7,7 @@ import fi.kapsi.kosmik.sfti.test.StopWatch
 import fi.kapsi.kosmik.sfti.{Chapter17 => chapter}
 import org.scalatest.{AsyncFunSpec, Matchers}
 
+import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 
 class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
@@ -127,6 +128,38 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
           assert(stopWatch.split < Duration.ofMillis((durations.max * 1.1).toInt),
             "futures should be evaluated in parallel in about " + durations.max + " millis")
           assert(xs == results)
+        }
+      }
+    }
+  }
+
+  describe("Exercise 06") {
+    import chapter.Ex06._
+
+    it("should repeat action asynchronously until condition is met") {
+      val remainingInputs = mutable.Stack[String]("passw0rd", "pwd", "foo", "secret", "fie")
+
+      def action = {
+        Thread.sleep(200)
+        remainingInputs.pop()
+      }
+
+      val pastInputs = mutable.Stack[String]()
+      val validate = (input: String) => {
+        Thread.sleep(100)
+        pastInputs.push(input)
+        input == "secret"
+      }
+
+      val eventualResult = assertDurationLess(Duration.ofMillis(100)) {
+        repeat(action, validate)
+      }
+
+      eventualResult map {
+        validInput => {
+          assert(remainingInputs.length == 1)
+          assert(pastInputs.length == 4)
+          assert(validInput == "secret")
         }
       }
     }
