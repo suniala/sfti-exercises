@@ -1,7 +1,9 @@
 package fi.kapsi.kosmik.sfti
 
+import java.util.concurrent.Executors
+
 import scala.annotation.tailrec
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object Chapter17 {
 
@@ -133,4 +135,31 @@ object Chapter17 {
     }
   }
 
+  /**
+    * Write a program that counts the prime numbers between 1 and n, as reported
+    * by BigInt.isProbablePrime . Divide the interval into p parts, where p is the number
+    * of available processors. Count the primes in each part in concurrent futures
+    * and combine the results.
+    */
+  object Ex07 {
+
+    val pool = Executors.newCachedThreadPool()
+    implicit val ec = ExecutionContext.fromExecutor(pool)
+
+    def primesSequential(upTo: Int): Future[Seq[Int]] =
+      Future {
+        for (i <- 1 to upTo if BigInt(i).isProbablePrime(10)) yield i
+      }
+
+    def primesConcurrent(upTo: Int): Future[Seq[Int]] = {
+      val processors = Runtime.getRuntime.availableProcessors()
+
+      val partitionedComputations = (1 to processors)
+        .map(partition => Future {
+          (partition to upTo by processors)
+            .filter(BigInt(_).isProbablePrime(10))
+        })
+      Future.sequence(partitionedComputations).map(s => s.flatten).map(s => s.sorted)
+    }
+  }
 }

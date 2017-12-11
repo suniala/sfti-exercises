@@ -164,4 +164,47 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
       }
     }
   }
+
+  describe("Exercise 07") {
+    import chapter.Ex07._
+
+    val performanceTestN = 5000000
+    val performanceTestExpectedPrimes = 348513
+
+    it("should count expected primes sequentially") {
+      primesSequential(70) map {
+        ps => assert(ps == List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67))
+      }
+    }
+
+    it("should count expected number of primes sequentially") {
+      val stopWatch = StopWatch.start
+
+      primesSequential(performanceTestN) map {
+        ps => {
+          val split = stopWatch.split()
+          info(f"counting ${ps.length} primes sequentially took $split")
+          assert(ps.length == performanceTestExpectedPrimes)
+        }
+      }
+    }
+
+    it("should count expected primes concurrently") {
+      primesConcurrent(70) map {
+        ps => assert(ps == List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67))
+      }
+    }
+
+    it("should count expected number of primes concurrently") {
+      val stopWatch = StopWatch.start
+
+      primesConcurrent(performanceTestN) map {
+        ps => {
+          val split = stopWatch.split()
+          info(f"counting ${ps.length} primes concurrently took $split")
+          assert(ps.length == performanceTestExpectedPrimes)
+        }
+      }
+    }
+  }
 }
