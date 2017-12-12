@@ -155,7 +155,7 @@ object Chapter17 {
     def primesConcurrentC(upTo: Int): Future[Int] = {
       val processors = Runtime.getRuntime.availableProcessors()
 
-      // FIXME: this may create partitions like (2, 6, 10, ...) or (4, 8, 12, ...) which are quite useless
+      // NOTE: this may create partitions like (2, 6, 10, ...) or (4, 8, 12, ...) which are quite useless
       val partitionedComputations = (1 to processors)
         .map(partition => Future {
           (partition to upTo by processors)
@@ -165,11 +165,11 @@ object Chapter17 {
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
 
-    def primesCountConcurrent(upTo: Int): Future[Int] = {
+    def primesConcurrentD(upTo: Int): Future[Int] = {
       val partitions = Runtime.getRuntime.availableProcessors()
 
-      def candidates(from: Int, upTo: Int, by: Int): Stream[Int] = {
-        def it(from: Int, upTo: Int): Iterator[Int] = new Iterator[Int] {
+      def oddsAndTwoUpTo(upTo: Int) = {
+        def iterator() = new Iterator[Int] {
           var curr: Int = 1
 
           override def hasNext: Boolean = curr < upTo
@@ -181,32 +181,19 @@ object Chapter17 {
           }
         }
 
-        it(from, upTo)
-          .toStream
-          .zipWithIndex
-          .filter({
-            case (_, index) => (index + 1) >= from && (index + from - 1) % by == 0
-          })
-          .map({
-            case (cand, _) => cand
-          })
+        iterator().toStream
       }
 
       val partitionedComputations = (1 to partitions)
         .map(partition => Future {
-          candidates(partition, upTo, partitions)
-            .filter(BigInt(_).isProbablePrime(10))
-            .count(_ => true)
-        })
-      Future.sequence(partitionedComputations).map(s => s.sum)
-    }
-
-    def primesCountConcurrentA(upTo: Int): Future[Int] = {
-      val processors = Runtime.getRuntime.availableProcessors()
-
-      val partitionedComputations = (1 to processors)
-        .map(partition => Future {
-          (partition to upTo by processors)
+          oddsAndTwoUpTo(upTo)
+            .zipWithIndex
+            .filter({
+              case (_, index) => (index + 1) >= partition && (index + partition - 1) % partitions == 0
+            })
+            .map({
+              case (cand, _) => cand
+            })
             .filter(BigInt(_).isProbablePrime(10))
             .count(_ => true)
         })

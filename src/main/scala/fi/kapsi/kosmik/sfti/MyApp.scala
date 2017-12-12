@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 
 object MyApp extends App {
   println("starting")
-  val eventualResult = Chapter17.Ex07.primesCountConcurrent(5000000 * 2)
+  val eventualResult = Chapter17.Ex07.primesConcurrentD(5000000 * 2)
   val result = Await.result(eventualResult, 30.seconds)
   println(result)
   println("done")
