@@ -230,6 +230,20 @@ object Chapter17 {
       })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
+
+    def primesConcurrentE(upTo: Int): Future[Int] = {
+      val partitions = Runtime.getRuntime.availableProcessors()
+      val partitionSize = (upTo.toDouble / partitions).ceil.toInt
+
+      val partitionedComputations = (1 to partitions)
+        .map(partition => Future {
+          (1 to partitionSize)
+            .map(index => (partition - 1) * partitionSize + index)
+            .takeWhile(_ <= upTo) // ensure the last partition does not exceed upTo
+            .count(BigInt(_).isProbablePrime(10))
+        })
+      Future.sequence(partitionedComputations).map(s => s.sum)
+    }
   }
 
 }
