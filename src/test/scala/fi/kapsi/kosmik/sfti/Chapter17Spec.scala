@@ -173,25 +173,25 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
 
     it("should count expected primes sequentially") {
       primesSequential(70) map {
-        ps => assert(ps == List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67))
+        count => assert(count == 19)
       }
     }
 
-    //    it("should count expected number of primes sequentially") {
-    //      val stopWatch = StopWatch.start
-    //
-    //      primesSequential(performanceTestN) map {
-    //        ps => {
-    //          val split = stopWatch.split()
-    //          info(f"counting ${ps.length} primes sequentially took $split")
-    //          assert(ps.length == performanceTestExpectedPrimes)
-    //        }
-    //      }
-    //    }
+    it("should count expected number of primes sequentially") {
+      val stopWatch = StopWatch.start
+
+      primesSequential(performanceTestN) map {
+        count => {
+          val split = stopWatch.split()
+          info(f"counting $count primes sequentially took $split")
+          assert(count == performanceTestExpectedPrimes)
+        }
+      }
+    }
 
     it("should count expected primes concurrently") {
       primesConcurrentC(70) map {
-        ps => assert(ps == List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67))
+        size => assert(size == 19)
       }
     }
 
@@ -199,10 +199,10 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
       val stopWatch = StopWatch.start
 
       primesConcurrentA(performanceTestN) map {
-        ps => {
+        count => {
           val split = stopWatch.split()
-          info(f"counting ${ps.length} primes concurrently a took $split")
-          assert(ps.length == performanceTestExpectedPrimes)
+          info(f"counting $count primes concurrently a took $split")
+          assert(count == performanceTestExpectedPrimes)
         }
       }
     }
@@ -211,10 +211,10 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
       val stopWatch = StopWatch.start
 
       primesConcurrentB(performanceTestN) map {
-        ps => {
+        count => {
           val split = stopWatch.split()
-          info(f"counting ${ps.length} primes concurrently b took $split")
-          assert(ps.length == performanceTestExpectedPrimes)
+          info(f"counting $count primes concurrently b took $split")
+          assert(count == performanceTestExpectedPrimes)
         }
       }
     }
@@ -223,10 +223,10 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
       val stopWatch = StopWatch.start
 
       primesConcurrentC(performanceTestN) map {
-        ps => {
+        count => {
           val split = stopWatch.split()
-          info(f"counting ${ps.length} primes concurrently c took $split")
-          assert(ps.length == performanceTestExpectedPrimes)
+          info(f"counting $count primes concurrently c took $split")
+          assert(count == performanceTestExpectedPrimes)
         }
       }
     }
