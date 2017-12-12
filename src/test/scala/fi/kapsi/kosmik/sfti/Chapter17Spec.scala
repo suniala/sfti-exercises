@@ -206,5 +206,17 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
         }
       }
     }
+
+    it("should count expected number of primes concurrently sum") {
+      val stopWatch = StopWatch.start
+
+      primesCountConcurrent(5000000 * 2) map {
+        count => {
+          val split = stopWatch.split()
+          info(f"counting $count primes concurrently took $split")
+          assert(count == 664579)
+        }
+      }
+    }
   }
 }

@@ -145,6 +145,7 @@ object Chapter17 {
 
     val pool = Executors.newCachedThreadPool()
     implicit val ec = ExecutionContext.fromExecutor(pool)
+    //    import scala.concurrent.ExecutionContext.Implicits.global
 
     def primesSequential(upTo: Int): Future[Seq[Int]] =
       Future {
@@ -154,6 +155,7 @@ object Chapter17 {
     def primesConcurrent(upTo: Int): Future[Seq[Int]] = {
       val processors = Runtime.getRuntime.availableProcessors()
 
+      // FIXME: this may create partitions like (2, 6, 10, ...) or (4, 8, 12, ...) which are quite useless
       val partitionedComputations = (1 to processors)
         .map(partition => Future {
           (partition to upTo by processors)
@@ -161,5 +163,64 @@ object Chapter17 {
         })
       Future.sequence(partitionedComputations).map(s => s.flatten).map(s => s.sorted)
     }
+
+    def primesCountConcurrent(upTo: Int): Future[Int] = {
+      val partitions = Runtime.getRuntime.availableProcessors()
+
+      def candidates(from: Int, upTo: Int, by: Int): Stream[Int] = {
+        def it(from: Int, upTo: Int): Iterator[Int] = new Iterator[Int] {
+          var curr: Int = 1
+
+          override def hasNext: Boolean = curr < upTo
+
+          override def next(): Int = {
+            if (curr <= 2) curr += 1
+            else curr += 2
+            curr
+          }
+        }
+
+        it(from, upTo)
+          .toStream
+          .zipWithIndex
+          .filter({
+            case (_, index) => (index + 1) >= from && (index + from - 1) % by == 0
+          })
+          .map({
+            case (cand, _) => cand
+          })
+      }
+
+      val partitionedComputations = (1 to partitions)
+        .map(partition => Future {
+          println(f"start $partition")
+          val res = candidates(partition, upTo, partitions)
+              .map(c => {
+                if (c < 20) println(f"sample candidate $partition $c")
+                c
+              })
+            .filter(BigInt(_).isProbablePrime(10))
+            .count(_ => true)
+          println(f"done $partition, count $res")
+          res
+        })
+      Future.sequence(partitionedComputations).map(s => s.sum)
+    }
+
+    def primesCountConcurrentA(upTo: Int): Future[Int] = {
+      val processors = Runtime.getRuntime.availableProcessors()
+
+      val partitionedComputations = (1 to processors)
+        .map(partition => Future {
+          println(f"start $partition")
+          val res = (partition to upTo by processors)
+            .filter(BigInt(_).isProbablePrime(10))
+            .count(_ => true)
+          println(f"done $partition, count $res")
+          res
+        })
+      Future.sequence(partitionedComputations).map(s => s.sum)
+    }
   }
+
 }
