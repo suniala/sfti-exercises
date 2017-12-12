@@ -158,12 +158,9 @@ object Chapter17 {
       // FIXME: this may create partitions like (2, 6, 10, ...) or (4, 8, 12, ...) which are quite useless
       val partitionedComputations = (1 to processors)
         .map(partition => Future {
-          println(f"start $partition")
-          val res = (partition to upTo by processors)
+          (partition to upTo by processors)
             .filter(BigInt(_).isProbablePrime(10))
             .count(_ => true)
-          println(f"end $partition")
-          res
         })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
@@ -197,16 +194,9 @@ object Chapter17 {
 
       val partitionedComputations = (1 to partitions)
         .map(partition => Future {
-          println(f"start $partition")
-          val res = candidates(partition, upTo, partitions)
-            .map(c => {
-              if (c < 20) println(f"sample candidate $partition $c")
-              c
-            })
+          candidates(partition, upTo, partitions)
             .filter(BigInt(_).isProbablePrime(10))
             .count(_ => true)
-          println(f"done $partition, count $res")
-          res
         })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
@@ -216,12 +206,9 @@ object Chapter17 {
 
       val partitionedComputations = (1 to processors)
         .map(partition => Future {
-          println(f"start $partition")
-          val res = (partition to upTo by processors)
+          (partition to upTo by processors)
             .filter(BigInt(_).isProbablePrime(10))
             .count(_ => true)
-          println(f"done $partition, count $res")
-          res
         })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
@@ -232,14 +219,11 @@ object Chapter17 {
       val partitions = (1 to processors)
 
       val partitionedComputations = partitions.map(partition => Future {
-        println(f"start $partition")
-        val res = (1 to partitionSize)
+        (1 to partitionSize)
           .map(index => (partition - 1) * partitionSize + index)
           .filter(_ <= upTo)
           .filter(BigInt(_).isProbablePrime(10))
           .count(_ => true)
-        println(f"done $partition")
-        res
       })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
@@ -253,12 +237,9 @@ object Chapter17 {
           .takeWhile(_ <= upTo))
 
       val partitionedComputations = partitions.map(partition => Future {
-        println(f"start ${partition.head}")
-        val res = partition
+        partition
           .filter(BigInt(_).isProbablePrime(10))
           .count(_ => true)
-        println(f"end ${partition.head}")
-        res
       })
       Future.sequence(partitionedComputations).map(s => s.sum)
     }
