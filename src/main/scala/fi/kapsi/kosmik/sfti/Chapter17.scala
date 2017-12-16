@@ -1,9 +1,12 @@
 package fi.kapsi.kosmik.sfti
 
+import java.net.URL
 import java.util.concurrent.Executors
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
+import scala.io.Source
+import scala.util.{Success, Try}
 
 object Chapter17 {
 
@@ -190,6 +193,61 @@ object Chapter17 {
             .count(BigInt(_).isProbablePrime(10))
         })
       Future.sequence(partitionedComputations).map(s => s.sum)
+    }
+  }
+
+  /**
+    * Write a program that asks the user for a URL, reads the web page at that URL,
+    * and displays all the hyperlinks. Use a separate Future for each of these three
+    * steps.
+    */
+  object Ex08 {
+
+    class Quit extends Exception
+
+    private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+    def extractLinks(): Future[List[String]] = {
+      acquireUrl()
+        .flatMap({
+          case Some(u) => fetch(u)
+          case _ => throw new Quit
+        })
+        .flatMap(doc => extract(doc))
+    }
+
+    private def extract(doc: String): Future[List[String]] =
+      Future {
+        val linkPattern = """href="(http.+)"""".r
+        linkPattern.findAllMatchIn(doc).map(m => m.group(1)).toList
+      }
+
+    private def fetch(url: URL): Future[String] = {
+      println(f"Fetching $url")
+      Future {
+        Source.fromURL(url).mkString
+      }
+    }
+
+    private def acquireUrl(): Future[Option[URL]] = Future {
+      @tailrec def acquireInput(): Option[URL] = {
+        print("Please enter url: ")
+        val input = scala.io.StdIn.readLine()
+
+        input match {
+          case "" => None
+          case stringInput: String =>
+            val url = Try(new URL(stringInput))
+            url match {
+              case Success(u) => Some(u)
+              case _ =>
+                println("Invalid url!")
+                acquireInput()
+            }
+        }
+      }
+
+      acquireInput()
     }
   }
 
