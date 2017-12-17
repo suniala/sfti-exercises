@@ -207,8 +207,12 @@ object Chapter17 {
 
     private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-    def extractLinks(): Future[List[String]] = {
-      acquireUrl()
+    def extractLinks(url: Option[String]): Future[List[String]] = {
+      Future.successful(url)
+        .flatMap({
+          case Some(u) => Future.successful(Some(new URL(u)))
+          case _ => acquireUrl()
+        })
         .flatMap({
           case Some(u) => fetch(u)
           case _ => throw new Quit

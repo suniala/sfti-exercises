@@ -14,7 +14,9 @@ import scala.util.{Failure, Success}
 object ExtractLinks extends App {
   private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-  val eventualResult = extractLinks()
+  val url = if (args.length == 1) Some(args(0)) else None
+
+  val eventualResult = extractLinks(url)
   Await.ready(eventualResult, Duration.Inf)
 
   eventualResult.value.get match {
