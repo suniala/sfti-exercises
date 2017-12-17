@@ -218,7 +218,7 @@ object Chapter17 {
 
     private def extract(doc: String): Future[List[String]] =
       Future {
-        val linkPattern = """href="(http.+)"""".r
+        val linkPattern = """href="(http[^"]+)"""".r
         linkPattern.findAllMatchIn(doc).map(m => m.group(1)).toList
       }
 
