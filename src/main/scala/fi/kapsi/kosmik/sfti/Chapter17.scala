@@ -4,6 +4,7 @@ import java.net.URL
 import java.util.concurrent.Executors
 
 import scala.annotation.tailrec
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.{Success, Try}
@@ -253,6 +254,50 @@ object Chapter17 {
 
       acquireInput()
     }
+  }
+
+  /**
+    * Write a program that asks the user for a URL, reads the web page at that URL,
+    * finds all the hyperlinks, visits each of them concurrently, and locates the Server
+    * HTTP header for each of them. Finally, print a table of which servers were
+    * found how often. The futures that visit each page should return the header.
+    */
+  object Ex09 {
+
+    import Ex08.extractLinks
+
+    private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+    def fetchLinkedHttpServerCounts(url: Option[String]): Future[Map[String, Int]] = {
+      extractLinks(url)
+        .flatMap(links => {
+          val eventualServerName = links
+            .map(link => Future {
+              toUrl(link)
+                .map(url => fetchServerName(url))
+                .filter(_.isDefined)
+                .map(serverName => serverName.get)
+            })
+
+          Future.sequence(eventualServerName)
+            .map(possibleServerNames => possibleServerNames
+              .filter(_.isSuccess)
+              .map(_.get)
+              .foldLeft(immutable.Map[String, Int]() withDefaultValue 0)({
+                (counts, serverName) => counts.updated(serverName, counts(serverName) + 1)
+              }))
+        })
+    }
+
+    private def fetchServerName(url: URL): Option[String] = {
+      println(s"Fetching header for $url")
+      val name = Option(url.openConnection().getHeaderField("Server"))
+      if (name.isDefined) println(s"$url uses server: ${name.get}")
+      else println(s"$url does not expose server name")
+      name
+    }
+
+    private def toUrl(link: String): Try[URL] = Try(new URL(link))
   }
 
 }
