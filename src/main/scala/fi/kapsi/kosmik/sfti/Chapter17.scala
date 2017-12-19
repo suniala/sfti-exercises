@@ -271,17 +271,16 @@ object Chapter17 {
     def fetchLinkedHttpServerCounts(url: Option[String]): Future[Map[String, Int]] = {
       extractLinks(url)
         .flatMap(links => {
-          val eventualServerName = links
+          val eventualServerNames = links
             .map(link => Future {
               toUrl(link)
-                .map(url => fetchServerName(url))
-                .filter(_.isDefined)
-                .map(serverName => serverName.get)
+                .map(url => fetchServerName(url)) // is not evaluated if toUrl returns Failure
+                .map(serverName => serverName.get) // is not evaluated if fetchServerName returns None
             })
 
-          Future.sequence(eventualServerName)
+          Future.sequence(eventualServerNames)
             .map(possibleServerNames => possibleServerNames
-              .filter(_.isSuccess)
+              .filter(_.isSuccess) // we can't omit isSuccess as the collection under iteration is a List and not a Try
               .map(_.get)
               .foldLeft(immutable.Map[String, Int]() withDefaultValue 0)({
                 (counts, serverName) => counts.updated(serverName, counts(serverName) + 1)
