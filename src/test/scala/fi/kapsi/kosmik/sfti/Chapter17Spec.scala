@@ -1,5 +1,6 @@
 package fi.kapsi.kosmik.sfti
 
+import java.net.URL
 import java.time.Duration
 import java.util.concurrent.Executors
 
@@ -215,6 +216,85 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
           val split = stopWatch.split()
           info(f"counting $count primes with primesConcurrentRanges took $split")
           count shouldEqual performanceTestExpectedPrimes
+        }
+      }
+    }
+  }
+
+  describe("Exercise 10") {
+    import chapter.Ex10._
+
+    def expectedCounts(serverNames: Map[_, Option[String]]): Map[String, Int] = {
+      val counts = serverNames.foldLeft(Map[String, Int]() withDefaultValue 0)({
+        case (acc, (_, Some(name))) => acc.updated(name, acc(name) + 1)
+        case (acc, _) => acc
+      })
+      counts
+    }
+
+    it("should count small number server names") {
+      val serverNames = Map[String, Option[String]](
+        "http://a.org" -> Some("Apache"),
+        "http://b.org" -> Some("nginx"),
+        "http://c.org" -> Some("Apache/2.4 1"),
+        "http://d.org" -> Some("Apache"),
+        "http://e.org" -> None,
+        "http://f.org" -> Some("nginx"),
+        "http://g.org" -> Some("nginx")
+      )
+
+      def fetchUrls() = Future {
+        Thread.sleep(300)
+        serverNames.keys.toList.map(url => new URL(url))
+      }(executionContext)
+
+      def fetchServerName(url: URL) = Future {
+        Thread.sleep(url.toString.length % 7 * 10)
+        serverNames(url.toString)
+      }(executionContext)
+
+      fetchLinkedHttpServerCounts(fetchUrls, fetchServerName) map {
+        counts => {
+          val expected = expectedCounts(serverNames)
+          info(s"expect server name counts: $expected")
+          counts shouldEqual expected
+        }
+      }
+    }
+
+    it("should count large number server names") {
+      // NOTE: Don't use a Map[URL, Option[String]] as using URLs as keys is very slow as URL.hashCode does a
+      // DNS lookup.
+      lazy val serverNames: Map[String, Option[String]] = {
+        import util.Random
+
+        val lookup = Map[Int, String](
+          0 -> "Apache",
+          1 -> "nginx",
+          2 -> "IIS",
+          3 -> "varnish"
+        )
+
+        val random = new Random(123) // Ensure we get the same sequence of numbers for every test run.
+        Seq.fill(12345)(s"http://${random.nextInt.abs}.org")
+          .map(url => url -> lookup.get(url.hashCode % 5))
+      }.toMap
+
+      def fetchUrls() = Future {
+        // NOTE: To avoid slow performance due to URL.hashCode, first convert to List and only then create URLs
+        serverNames.keys.toList.map(u => new URL(u))
+      }(executionContext)
+
+      def fetchServerName(url: URL) = Future {
+        Thread.sleep(url.toString.length % 2)
+        serverNames(url.toString)
+      }(executionContext)
+
+      fetchLinkedHttpServerCounts(fetchUrls, fetchServerName) map {
+        counts => {
+          val expected = expectedCounts(serverNames)
+          info(s"expect server name counts: $expected")
+          counts shouldEqual expected
         }
       }
     }

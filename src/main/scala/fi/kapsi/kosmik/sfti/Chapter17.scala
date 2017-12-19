@@ -4,6 +4,7 @@ import java.net.URL
 import java.util.concurrent.Executors
 
 import scala.annotation.tailrec
+import scala.collection.concurrent.TrieMap
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
@@ -297,6 +298,48 @@ object Chapter17 {
     }
 
     private def toUrl(link: String): Try[URL] = Try(new URL(link))
+  }
+
+  /**
+    * Change the preceding exercise where the futures that visit each header update
+    * a shared Java ConcurrentHashMap or Scala TrieMap . This isn’t as easy as it sounds.
+    * A threadsafe data structure is safe in the sense that you cannot corrupt its
+    * implementation, but you have to make sure that sequences of reads and
+    * updates are atomic.
+    * <p>
+    * NOTE: So as to make testing easier, I choose to make a simulated version of the preceding exercise.
+    */
+  object Ex10 {
+    private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+    private class Counter {
+      private val counts = TrieMap[String, Int]()
+
+      def add(name: String): Unit = synchronized {
+        val current = counts.getOrElse(name, 0)
+        counts.put(name, current + 1)
+      }
+
+      def toMap: Map[String, Int] = counts.toMap
+    }
+
+    def fetchLinkedHttpServerCounts(fetchUrls: () => Future[List[URL]],
+                                    fetchServerName: URL => Future[Option[String]]): Future[Map[String, Int]] = {
+      val counts = new Counter
+
+      // FIXME: This may lead to OutOfMemoryError with very large numbers of urls
+      fetchUrls()
+        .flatMap(links => {
+          val eventualServerNames = links
+            .map(link => {
+              fetchServerName(link)
+                .andThen({
+                  case Success(Some(serverName)) => counts.add(serverName)
+                })
+            })
+          Future.sequence(eventualServerNames)
+        }).map(_ => counts.toMap)
+    }
   }
 
 }
