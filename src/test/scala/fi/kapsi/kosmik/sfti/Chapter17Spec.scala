@@ -8,7 +8,7 @@ import fi.kapsi.kosmik.sfti.test.StopWatch
 import fi.kapsi.kosmik.sfti.{Chapter17 => chapter}
 import org.scalatest.{AsyncFunSpec, Matchers}
 
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -323,6 +323,44 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
             "Result for http://2041168423.org", "Result for http://1688959843.org", "Result for http://726562605.org",
             "Result for http://9894546.org", "Result for http://84789648.org", "Result for http://1814152839.org",
             "Result for http://1357495115.org", "Result for http://48664380.org")
+        }
+      }
+    }
+  }
+
+  describe("Exercise 13") {
+    import chapter.Ex13._
+
+    it("should find palindromic prime and immediately stop all workers") {
+      val workerCount = 4
+      val firstWorkerResults = immutable.Map(
+        1 -> 1003001,
+        2 -> 1250521,
+        3 -> 1508051,
+        4 -> 1755571
+      )
+
+      val eventualRes = findFirstPalindromicPrime(1 * 1000 * 1000, 2 * 1000 * 1000, workers = workerCount)
+      eventualRes map {
+        primeAndStats => {
+          // Sleep for a while so as to ensure workers would have time to progress if they did not terminate once
+          // one of them found a palindromic prime.
+          Thread.sleep(2 * 1000)
+
+          // This is not a 100% reliable test setup but it "works on my machine".
+          primeAndStats._1 shouldEqual firstWorkerResults(2)
+
+          val stats = primeAndStats._2.toMap
+          stats.keySet.size shouldEqual workerCount
+
+          // The same note about reliability applies here. It is impossible to say exact evaluation counts for workers
+          // except for the one that finds the first palindromic prime (assuming of course that it is always the same
+          // prime that is found first). However, it is enough to verify that evaluation counts are well below the
+          // upper limit of each worker.
+          stats(1) shouldBe <(3000)
+          stats(2) shouldEqual 522
+          stats(3) shouldBe <(3000)
+          stats(4) shouldBe <(3000)
         }
       }
     }

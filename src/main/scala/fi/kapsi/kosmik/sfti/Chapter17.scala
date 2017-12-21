@@ -431,4 +431,52 @@ object Chapter17 {
     }
   }
 
+  /**
+    * Use a promise for implementing cancellation. Given a range of big integers,
+    * split the range into subranges that you concurrently search for palindromic
+    * primes. When such a prime is found, set it as the value of the future. All tasks
+    * should periodically check whether the promise is completed, in which case
+    * they should terminate.
+    */
+  object Ex13 {
+    private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+    class WorkerStats {
+      private val stats = new TrieMap[Int, Int]()
+
+      def toMap: immutable.Map[Int, Int] = synchronized {
+        stats.toMap
+      }
+
+      private[Ex13] def tick(worker: Int) = synchronized {
+        stats.put(worker, stats.getOrElse(worker, 0) + 1)
+      }
+    }
+
+    def findFirstPalindromicPrime(from: Int, upTo: Int, workers: Int = Runtime.getRuntime.availableProcessors()):
+    Future[(Int, WorkerStats)] = {
+      val stats = new WorkerStats
+      val promise = Promise[(Int, WorkerStats)]()
+
+      val partitionSize = ((upTo - from).toDouble / workers).ceil.toInt
+      (1 to workers)
+        .map(worker => Future {
+          val cs = (1 to partitionSize)
+            .map(index => (worker - 1) * partitionSize + from + index - 1)
+            .takeWhile(_ <= upTo) // ensure the last partition does not exceed upTo
+            .iterator
+
+          while (!promise.isCompleted && cs.hasNext) {
+            stats.tick(worker)
+            val candidate = cs.next()
+            if (BigInt(candidate).isProbablePrime(10) && candidate.toString == candidate.toString.reverse) {
+              promise.tryComplete(Success((candidate, stats)))
+            }
+          }
+        })
+
+      promise.future
+    }
+  }
+
 }
