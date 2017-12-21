@@ -10,6 +10,7 @@ import org.scalatest.{AsyncFunSpec, Matchers}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
   /**
@@ -295,6 +296,33 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
           val expected = expectedCounts(serverNames)
           info(s"expect server name counts: $expected")
           counts shouldEqual expected
+        }
+      }
+    }
+  }
+
+  describe("Exercise 12") {
+    import chapter.Ex12._
+
+    it("should show how to test 2") {
+      def fetchLinks(url: URL): Future[List[String]] = Future {
+        val random = new Random(url.toString.hashCode())
+        (for (i <- 1 to 10) yield random.nextInt.abs)
+          .map { r => s"http://$r.org" }
+          .toList
+      }(concurrentExecutionContext)
+
+      def processLink(link: String): String = {
+        s"Result for $link"
+      }
+
+      val eventualRes = simulateWithPromises(new URL("http://this-is-a-fake-url.org"), fetchLinks, processLink)
+      Future.sequence(eventualRes).map {
+        r => {
+          r shouldEqual List("Result for http://1783571453.org", "Result for http://1320690939.org",
+            "Result for http://2041168423.org", "Result for http://1688959843.org", "Result for http://726562605.org",
+            "Result for http://9894546.org", "Result for http://84789648.org", "Result for http://1814152839.org",
+            "Result for http://1357495115.org", "Result for http://48664380.org")
         }
       }
     }

@@ -1,14 +1,16 @@
 package fi.kapsi.kosmik.sfti
 
 import java.net.URL
+import java.util.Date
 import java.util.concurrent.Executors
 
 import scala.annotation.tailrec
 import scala.collection.concurrent.TrieMap
 import scala.collection.immutable
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.io.Source
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object Chapter17 {
 
@@ -339,6 +341,93 @@ object Chapter17 {
             })
           Future.sequence(eventualServerNames)
         }).map(_ => counts.toMap)
+    }
+  }
+
+  /**
+    * Using futures, run four tasks that each sleep for ten seconds and then print
+    * the current time. If you have a reasonably modern computer, it is very likely
+    * that it reports four available processors to the JVM, and the futures should
+    * all complete at around the same time. Now repeat with forty tasks. What
+    * happens? Why? Replace the execution context with a cached thread pool.
+    * What happens now? (Be careful to define the futures after replacing the implicit
+    * execution context.)
+    */
+  object Ex11 {
+    /**
+      * As this implementation uses the default global execution context, it can only run as many concurrent threads
+      * as there are available processors. If `threads` is larger that processor count, then some threads will print
+      * time (and complete) only after others have already been completed.
+      *
+      * @param threads number of threads to run
+      * @return a future unity
+      */
+    def delayedPrintTimeUsingDefaultEC(threads: Int): Future[Unit] = {
+      runThreads(threads, scala.concurrent.ExecutionContext.Implicits.global)
+    }
+
+    /**
+      * This implementation uses a thread pool execution context and should be able to run a large number of threads
+      * concurrently. You can expect each thread to print (and complete) around the same time.
+      *
+      * @param threads number of threads to run
+      * @return a future unity
+      */
+    def delayedPrintTimeUsingThreadPoolEC(threads: Int): Future[Unit] = {
+      runThreads(threads, ExecutionContext.fromExecutor(Executors.newCachedThreadPool()))
+    }
+
+    private def runThreads(threads: Int, executionContext: ExecutionContext): Future[Unit] = {
+      implicit val ec: ExecutionContext = executionContext
+
+      val fs = for (i <- 1 to threads) yield Future {
+        println(s"  thread $i: start")
+        Thread.sleep(1000)
+        println(s"  thread $i: ${new Date}")
+      }
+
+      Future.sequence(fs).map(_ => Future {})
+    }
+  }
+
+  /**
+    * Write a method that, given a URL, locates all hyperlinks, makes a promise
+    * for each of them, starts a task in which it will eventually fulfill all promises,
+    * and returns a sequence of futures for the promises. Why would it not be a
+    * good idea to return a sequence of promises?
+    * <p>
+    * Answer: returning a sequence of promises is not a good idea because promise is writable and thus, in practice,
+    * exposes implementation internals to the caller.
+    */
+  object Ex12 {
+    private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+    def simulateWithPromises(url: URL,
+                             fetchLinks: URL => Future[List[String]],
+                             processLink: String => String): List[Future[String]] = {
+      // NOTE: This is a bit convoluted but the aim is to show what it takes to implement a function that has a
+      // Future[List[T]] as input and needs to produce a List[Future[T]]. The only way I could figure out was
+      // to synchronously wait for Future[List[T]] to complete.
+      val linkPromises = waitForLinks(fetchLinks(url)).map(link => (link, Promise[String]()))
+
+      Future[Unit] {
+        linkPromises.foreach(ls => {
+          Thread.sleep(10)
+          ls._2.success(processLink(ls._1))
+        })
+      }
+
+      linkPromises.map(ls => ls._2.future)
+    }
+
+    private def waitForLinks(eventualLinks: Future[List[String]]) = {
+      Await.ready(eventualLinks, Duration.Inf)
+
+      val links = eventualLinks.value.get match {
+        case Success(res) => res
+        case Failure(ex) => throw ex
+      }
+      links
     }
   }
 
