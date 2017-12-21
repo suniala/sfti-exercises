@@ -304,7 +304,7 @@ class Chapter17Spec extends AsyncFunSpec with Matchers with ExerciseSupport {
   describe("Exercise 12") {
     import chapter.Ex12._
 
-    it("should show how to test 2") {
+    it("should return simulated results") {
       def fetchLinks(url: URL): Future[List[String]] = Future {
         val random = new Random(url.toString.hashCode())
         (for (i <- 1 to 10) yield random.nextInt.abs)
