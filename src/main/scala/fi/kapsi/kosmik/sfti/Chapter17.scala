@@ -405,9 +405,10 @@ object Chapter17 {
     def simulateWithPromises(url: URL,
                              fetchLinks: URL => Future[List[String]],
                              processLink: String => String): List[Future[String]] = {
-      // NOTE: This is a bit convoluted but the aim is to show what it takes to implement a function that has a
-      // Future[List[T]] as input and needs to produce a List[Future[T]]. The only way I could figure out was
-      // to synchronously wait for Future[List[T]] to complete.
+      // NOTE: We get a Future[List] as input but need to produce List[Future] as the return value. As the list
+      // must have a Future for every link, the only way to get this is to block until we get the links. Maybe it
+      // would make sense for this function to return a Future[List[Future]] but let's think of this as a demonstration
+      // of blocking while waiting for results.
       val linkPromises = waitForLinks(fetchLinks(url)).map(link => (link, Promise[String]()))
 
       Future[Unit] {
